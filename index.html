@@ -2,126 +2,28 @@
 <html>
 <head>
     <title>YouTube Translation Player</title>
-    <style>
-        /* ... предыдущие стили ... */
-        #setupInstructions {
-            margin: 20px 0;
-            padding: 10px;
-            background: #333;
-            border-radius: 4px;
-        }
-        .proxyInput {
-            width: 100% !important;
-            margin-bottom: 10px;
-        }
-    </style>
 </head>
 <body>
+    <h1>YouTube Translation Player</h1>
+    <div>
+        <h2>Настройка прокси-сервера:</h2>
+        <input type="text" id="proxyUrl" placeholder="Введите URL вашего прокси-сервера" style="width: 100%; max-width: 500px;">
+    </div>
+    <div>
+        <input type="text" id="videoId" placeholder="Введите YouTube Video ID">
+        <button onclick="loadVideo()">Загрузить видео</button>
+    </div>
+    <div>
+        <p>Ссылка для шаринга:</p>
+        <input type="text" id="shareLink" readonly>
+        <button onclick="copyShareLink()">Копировать</button>
+    </div>
+    <div id="player"></div>
+    <audio id="translationAudio" controls></audio>
 
-<!-- Добавляем настройку прокси -->
-<div id="setupInstructions">
-    <h3>Настройка прокси-сервера:</h3>
-    <input type="text" id="proxyUrl" class="proxyInput" 
-           placeholder="Введите URL вашего прокси-сервера (например: https://your-proxy.herokuapp.com)"
-           onchange="saveProxyUrl()">
-</div>
-
-<!-- Остальной код как был -->
-<div id="controls">
-    <input type="text" id="videoId" placeholder="Введите YouTube Video ID">
-    <button onclick="loadVideo()">Загрузить видео</button>
-</div>
-
-<div id="share">
-    <p>Ссылка для шаринга:</p>
-    <input type="text" id="shareLink" readonly>
-    <button onclick="copyShareLink()">Копировать</button>
-</div>
-
-<div id="player"></div>
-<br>
-<audio id="audio" controls></audio>
-
-<script>
-// Добавляем работу с прокси
-let proxyUrl = localStorage.getItem('proxyUrl') || '';
-
-function saveProxyUrl() {
-    proxyUrl = document.getElementById('proxyUrl').value.trim();
-    localStorage.setItem('proxyUrl', proxyUrl);
-}
-
-// При загрузке страницы
-window.onload = function() {
-    if (proxyUrl) {
-        document.getElementById('proxyUrl').value = proxyUrl;
-    }
-}
-
-function loadAudio(url) {
-    if (!proxyUrl) {
-        alert('Пожалуйста, укажите URL прокси-сервера!');
-        return;
-    }
-    audioPlayer.src = `${proxyUrl}/proxy-audio?url=${encodeURIComponent(url)}`;
-    audioPlayer.volume = 1.0;
-}
-
-// Обновляем генерацию ссылки для шаринга
-function updateShareLink(videoId) {
-    const shareDiv = document.getElementById('share');
-    const shareLinkInput = document.getElementById('shareLink');
-    
-    if (videoId && currentTranslationUrl && proxyUrl) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('v', videoId);
-        url.searchParams.set('t', encodeURIComponent(currentTranslationUrl));
-        url.searchParams.set('p', encodeURIComponent(proxyUrl));
-        
-        shareLinkInput.value = url.toString();
-        shareDiv.style.display = 'block';
-    }
-}
-
-// При загрузке проверяем параметры URL
-window.onYouTubeIframeAPIReady = function() {
-    youtubePlayer = new YT.Player('player', {
-        height: '360',
-        width: '640',
-        videoId: '',
-        playerVars: {
-            'autoplay': 0,
-            'controls': 1
-        },
-        events: {
-            'onStateChange': onPlayerStateChange
-        }
-    });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('v');
-    const translationUrl = urlParams.get('t');
-    const urlProxyUrl = urlParams.get('p');
-    
-    if (urlProxyUrl) {
-        proxyUrl = decodeURIComponent(urlProxyUrl);
-        document.getElementById('proxyUrl').value = proxyUrl;
-        localStorage.setItem('proxyUrl', proxyUrl);
-    }
-    
-    if (videoId) {
-        document.getElementById('videoId').value = videoId;
-        loadVideo();
-        
-        if (translationUrl) {
-            currentTranslationUrl = decodeURIComponent(translationUrl);
-            loadAudio(currentTranslationUrl);
-        }
-    }
-};
-
-// ... остальной код без изменений ...
-</script>
-
+    <script>
+        // YouTube Player API code here
+        // Add your JavaScript code for player functionality
+    </script>
 </body>
 </html>
