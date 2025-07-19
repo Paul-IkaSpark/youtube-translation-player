@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Translation Player</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #controls, #share {
+            margin: 20px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        input[type="text"] {
+            padding: 5px;
+            margin-right: 10px;
+            width: 400px;
+            background: #222;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+        button {
+            padding: 5px 10px;
+            background: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #666;
+        }
+        #share {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <input type="text" id="videoId" placeholder="Введите YouTube Video ID">
+    <button onclick="loadVideo()">Загрузить видео</button>
+</div>
+
+<div id="share">
+    <p>Ссылка для шаринга:</p>
+    <input type="text" id="shareLink" readonly>
+    <button onclick="copyShareLink()">Копировать</button>
+</div>
+
+<div id="player"></div>
+<br>
+<audio id="audio" controls></audio>
+
+<script>
+let youtubePlayer = null;
+const audioPlayer = document.getElementById('audio');
+let currentTranslationUrl = '';
+
+// Загружаем YouTube API
+const tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+document.body.appendChild(tag);
+
+// Создаем YouTube плеер
+window.onYouTubeIframeAPIReady = function() {
+    youtubePlayer = new YT.Player('player', {
+        height: '360',
+        width: '640',
+        videoId: '',
+        playerVars: {
+            'autoplay': 0,
+            'controls': 1
+        },
+        events: {
+            'onStateChange': onPlayerStateChange
+        }
+    });
+
+    // Проверяем параметры URL при загрузке
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('v');
+    const translationUrl = urlParams.get('t');
+    
+    if (videoId) {
+        document.getElementById('videoId').value = videoId;
+        loadVideo();
+        
+        if (translationUrl) {
+            // Декодируем и загружаем аудио
+            currentTranslationUrl = decodeURIComponent(translationUrl);
+            loadAudio(currentTranslationUrl);
+        }
+    }
+};
+
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+        audioPlayer.play();
+        youtubePlayer.setVolume(20);
+        audioPlayer.volume = 1.0;
+    } else if (event.data === YT.PlayerState.PAUSED) {
+        audioPlayer.pause();
+    }
+}
+
+audioPlayer.onplay = function() {
+    if (youtubePlayer && youtubePlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+        youtubePlayer.playVideo();
+    }
+};
+
+audioPlayer.onpause = function() {
+    if (youtubePlayer && youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        youtubePlayer.pauseVideo();
+    }
+};
+
+function loadVideo() {
+    const videoId = document.getElementById('videoId').value.trim();
+    if (videoId && youtubePlayer) {
+        youtubePlayer.loadVideoById(videoId);
+        youtubePlayer.setVolume(20);
+        updateShareLink(videoId);
+    }
+}
+
+function loadAudio(url) {
+    audioPlayer.src = url;  // Теперь используем прямой URL
+    audioPlayer.volume = 1.0;
+}
+
+function updateShareLink(videoId) {
+    const shareDiv = document.getElementById('share');
+    const shareLinkInput = document.getElementById('shareLink');
+    
+    if (videoId && currentTranslationUrl) {
+        // Создаем ссылку с параметрами
+        const url = new URL(window.location.href);
+        url.searchParams.set('v', videoId);
+        url.searchParams.set('t', encodeURIComponent(currentTranslationUrl));
+        
+        shareLinkInput.value = url.toString();
+        shareDiv.style.display = 'block';
+    }
+}
+
+function copyShareLink() {
+    const shareLinkInput = document.getElementById('shareLink');
+    shareLinkInput.select();
+    document.execCommand('copy');
+}
+
+// Обработчик для автоматической загрузки аудио
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'VOT_LOAD_CONTENT') {
+        currentTranslationUrl = event.data.translationUrl;
+        loadAudio(currentTranslationUrl);
+        
+        // Обновляем ссылку для шаринга
+        const videoId = document.getElementById('videoId').value.trim();
+        if (videoId) {
+            updateShareLink(videoId);
+        }
+    }
+});
+</script>
+
+</body>
+</html>
