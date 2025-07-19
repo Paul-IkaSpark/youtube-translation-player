@@ -2,12 +2,13 @@
 <html>
 <head>
     <title>YouTube Translation Player</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
     <h1>YouTube Translation Player</h1>
     <div>
         <h2>Настройка прокси-сервера:</h2>
-        <input type="text" id="proxyUrl" placeholder="Введите URL вашего прокси-сервера" style="width: 100%; max-width: 500px;">
+        <input type="text" id="proxyUrl" value="https://youtube-translation-player.onrender.com" style="width: 100%; max-width: 500px;">
     </div>
     <div>
         <input type="text" id="videoId" placeholder="Введите YouTube Video ID">
@@ -22,8 +23,70 @@
     <audio id="translationAudio" controls></audio>
 
     <script>
-        // YouTube Player API code here
-        // Add your JavaScript code for player functionality
+        let player;
+        
+        function onYouTubeIframeAPIReady() {
+            // YouTube API готов к использованию
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('v');
+            if (videoId) {
+                document.getElementById('videoId').value = videoId;
+                loadVideo();
+            }
+        }
+
+        function loadVideo() {
+            const videoId = document.getElementById('videoId').value;
+            if (!videoId) return;
+
+            if (player) {
+                player.loadVideoById(videoId);
+            } else {
+                player = new YT.Player('player', {
+                    height: '360',
+                    width: '640',
+                    videoId: videoId,
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            }
+
+            // Обновляем ссылку для шаринга
+            const shareUrl = new URL(window.location.href);
+            shareUrl.searchParams.set('v', videoId);
+            document.getElementById('shareLink').value = shareUrl.toString();
+
+            // Загружаем аудио перевода
+            loadTranslation(videoId);
+        }
+
+        function loadTranslation(videoId) {
+            const proxyUrl = document.getElementById('proxyUrl').value;
+            const audio = document.getElementById('translationAudio');
+            audio.src = `${proxyUrl}/proxy-audio?url=https://youtube.com/watch?v=${videoId}`;
+        }
+
+        function onPlayerReady(event) {
+            // Видео готово к воспроизведению
+        }
+
+        function onPlayerStateChange(event) {
+            const audio = document.getElementById('translationAudio');
+            
+            if (event.data === YT.PlayerState.PLAYING) {
+                audio.play();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                audio.pause();
+            }
+        }
+
+        function copyShareLink() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            document.execCommand('copy');
+        }
     </script>
 </body>
 </html>
