@@ -19,10 +19,19 @@ app.get('/proxy-audio', async (req, res) => {
         }
 
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Set appropriate headers
+        res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        // Pipe the response
         response.body.pipe(res);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error fetching audio');
+        console.error('Proxy error:', error);
+        res.status(500).send(`Error fetching audio: ${error.message}`);
     }
 });
 
