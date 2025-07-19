@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Translation Player</title>
+</head>
+<body>
+    <h1>YouTube Translation Player</h1>
+    <div>
+        <h2>Настройка прокси-сервера:</h2>
+        <input type="text" id="proxyUrl" placeholder="Введите URL вашего прокси-сервера" style="width: 100%; max-width: 500px;">
+    </div>
+    <div>
+        <input type="text" id="videoId" placeholder="Введите YouTube Video ID">
+        <button onclick="loadVideo()">Загрузить видео</button>
+    </div>
+    <div>
+        <p>Ссылка для шаринга:</p>
+        <input type="text" id="shareLink" readonly>
+        <button onclick="copyShareLink()">Копировать</button>
+    </div>
+    <div id="player"></div>
+    <audio id="translationAudio" controls></audio>
+
+    <script>
+        // YouTube Player API code here
+        // Add your JavaScript code for player functionality
+    </script>
+</body>
+</html>
